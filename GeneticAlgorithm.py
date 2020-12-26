@@ -10,6 +10,17 @@ class GeneticAlgorithm:
     def fitness_func(self, individu):
         pass
 
+    def randomArray(self, arr, length = 1):
+        rand_arr = []
+        
+        tmp_population = arr.copy()
+        while len(tmp_population) > 0 and len(rand_arr) < length:
+            i = random.randint(0, len(tmp_population)-1)
+            val = tmp_population[i]
+            del tmp_population[i]
+            rand_arr.append(val)
+        return rand_arr
+
     def setFirstGeneration(self):
         self.generation = []
         self.population = []
@@ -49,7 +60,7 @@ class GeneticAlgorithm:
             "parents": parents
         }
 
-    def crossOver(self, parent1, parent2):
+    def crossOverSinglePoint(self, parent1, parent2):
         # parent1 = [hl1, hl2, hl3, hl4, hl5]
         # parent2 = [hl1, hl2, hl3, hl4, hl5]
         p1 = parent1["kromosom"]
@@ -62,6 +73,30 @@ class GeneticAlgorithm:
             if i < point:
                 child1["kromosom"].append(p1[i])
                 child2["kromosom"].append(p2[i])
+            else:
+                child1["kromosom"].append(p2[i])
+                child2["kromosom"].append(p1[i])
+        return child1, child2
+
+    def crossOverAvg(self, parent1, parent2, rate = 0.2):
+        # parent1 = [hl1, hl2, hl3, hl4, hl5]
+        # parent2 = [hl1, hl2, hl3, hl4, hl5]
+        p1 = parent1["kromosom"]
+        p2 = parent2["kromosom"]
+
+        length_kromosom = len(p1)
+        number_of_co_gen = round(length_kromosom * rate)
+
+        random_index = self.randomArray(range(length_kromosom), length=number_of_co_gen)
+        
+        child1 = self.createIndividu([])
+        child2 = self.createIndividu([])
+        for i in range(length_kromosom):
+            hl = None
+            if i in random_index:
+                avg = round((p1[i] + p2[i])/2)
+                child1["kromosom"].append(avg)
+                child2["kromosom"].append(avg)
             else:
                 child1["kromosom"].append(p2[i])
                 child2["kromosom"].append(p1[i])
@@ -99,7 +134,7 @@ class GeneticAlgorithm:
         mates = self.selection()
         for parent1, parent2 in mates:
             print("crossing over >", parent1["kromosom"], parent2["kromosom"])
-            child1, child2 = self.crossOver(parent1, parent2)
+            child1, child2 = self.crossOverAvg(parent1, parent2)
             print("children >", child1["kromosom"], child2["kromosom"])
 
             # mutasi
