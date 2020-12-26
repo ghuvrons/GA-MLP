@@ -10,6 +10,7 @@ class GeneticAlgorithm:
     def fitness_func(self, individu):
         pass
 
+    #Inisiasi generasi pertama
     def setFirstGeneration(self):
         self.generation = []
         self.population = []
@@ -24,6 +25,7 @@ class GeneticAlgorithm:
             self.population.append(individu)
         self.generation.append(self.population)
 
+    #membuat fungsi fitness
     def fitness(self, f):
         print(">", f)
         self.fitness_func = f
@@ -31,6 +33,7 @@ class GeneticAlgorithm:
             return self.fitness_func
         return decorator
 
+    #inisiasi random populasi
     def addPopulation(self, individu):
         # individu = [hl1, hl2, hl3, hl4, hl5]
         # hl1 = jumlah hl1
@@ -40,6 +43,7 @@ class GeneticAlgorithm:
             "isMarried": False
         })
 
+    #inisiasi individu
     def createIndividu(self, individu, parents = None):
         return {
             "kromosom": individu,
@@ -49,6 +53,23 @@ class GeneticAlgorithm:
             "parents": parents
         }
 
+        
+    def selection(self):
+        mates = []
+        tmp_population = self.population.copy()
+        while len(tmp_population) > 0:
+            i = random.randint(0, len(tmp_population)-1)
+            ind_1 = tmp_population[i]
+            del tmp_population[i]
+            
+            i = random.randint(0, len(tmp_population)-1)
+            ind_2 = tmp_population[i]
+            del tmp_population[i]
+            
+            mates.append((ind_1, ind_2, ))
+        return mates
+
+    #membuaat fungsi umtuk crossover/kawin silang
     def crossOver(self, parent1, parent2):
         # parent1 = [hl1, hl2, hl3, hl4, hl5]
         # parent2 = [hl1, hl2, hl3, hl4, hl5]
@@ -77,22 +98,8 @@ class GeneticAlgorithm:
 
     def etilsmReplacement(self):
         pass
-
-    def selection(self):
-        mates = []
-        tmp_population = self.population.copy()
-        while len(tmp_population) > 0:
-            i = random.randint(0, len(tmp_population)-1)
-            ind_1 = tmp_population[i]
-            del tmp_population[i]
-            
-            i = random.randint(0, len(tmp_population)-1)
-            ind_2 = tmp_population[i]
-            del tmp_population[i]
-            
-            mates.append((ind_1, ind_2, ))
-        return mates
-
+    
+    #membuat generasi selanjutnya sampai ke-n
     def newGeneration(self):
         self.newGen = []
         # cari jodoh : select from population
