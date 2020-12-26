@@ -71,6 +71,7 @@ class GeneticAlgorithm:
         self.fitness_func(individu)
 
     def mutation(self, individu):
+        # mutasi
         point = random.randint(0, 4)
         return individu
 
