@@ -1,6 +1,7 @@
 import random
 import pickle
 import os
+import csv
 
 class GeneticAlgorithm:
     def __init__(self):
@@ -8,8 +9,10 @@ class GeneticAlgorithm:
         self.number_of_generation = 2
         self.min_gen = 1
         self.max_gen = 100
-        self.generation = []
+        self.generation = self.loadGeneration()
         self.population = []
+        if len(self.generation) > 0:
+            self.population = self.generation[-1]
 
     def fitness_func(self, individu):
         pass
@@ -33,7 +36,7 @@ class GeneticAlgorithm:
         return path
     
     def saveGeneration(self, index = None):
-        if(index):
+        if index is not None:
             data = self.generation[index]
             path = "storage/generations/"+str(index)+".pkl"
         else:
@@ -45,25 +48,52 @@ class GeneticAlgorithm:
         return path
         
     def loadGeneration(self, index = None):
-        if(index):
+        if index is not None:
             path = "storage/generations/"+str(index)+".pkl"
         else:
             path = "storage/generation-all.pkl"
         if not os.path.isfile(path):
-            return None
+            return []
         file = open(path, 'rb')# open a file, where you stored the pickled data
         data = pickle.load(file)
         file.close()
         return data
+
+    def exportToCSV(self):
+        with open('storage/data.csv', mode='w') as csv_file:
+            csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+            csv_writer.writerow(['#Gen', 'individu', 'hl1', 'hl2', 'hl3', 'hl4', 'hl5', 'fitness', '', 
+                'parent1', '', '', '', '', '',
+                'parent1', '', '', '', ''
+            ])
+            i_gen = 0
+            for generation in self.generation:
+                i_gen += 1
+                i_ind = 0
+                for individu in generation:
+                    i_ind += 1
+                    kromosom = individu['kromosom']
+                    p1 = ['', '', '', '', '']
+                    p2 = ['', '', '', '', '']
+                    if individu['parents']:
+                        p1, p2 = individu['parents']
+
+                    csv_writer.writerow([i_gen, i_ind, 
+                        kromosom[0], kromosom[1], kromosom[2], kromosom[3], kromosom[4], individu['fitness'], '', 
+                        p1[0], p1[1], p1[2], p1[3], p1[4], '',
+                        p2[0], p2[1], p2[2], p2[3], p2[4]
+                    ])
 
     #Inisiasi generasi pertama
     def setFirstGeneration(self, backup = True, restore = False):
         self.generation = []
         self.population = []
         if restore:
-            self.generation = [self.loadGeneration()[0]]
-            self.population = self.generation[0]
-            return
+            self.population = self.loadGeneration(0)
+            if self.population:
+                self.generation = [self.population]
+                return
         for i in range(self.number_of_population):
             individu = self.createIndividu([
                 random.randint(self.min_gen, self.max_gen),
@@ -76,7 +106,7 @@ class GeneticAlgorithm:
             self.population.append(individu)
         self.generation.append(self.population)
         if backup:
-            self.saveGeneration()
+            self.saveGeneration(0)
 
     #membuat fungsi fitness
     def fitness(self, f):
@@ -191,10 +221,11 @@ class GeneticAlgorithm:
 
     def etilsmReplacement(self):
         # get 
+        pass
     
     #membuat generasi selanjutnya sampai ke-n
     def newGeneration(self):
-        self.newGen = []
+        newGen = []
         # cari jodoh : select from population
         mates = self.selection()
         for parent1, parent2 in mates:
@@ -211,7 +242,20 @@ class GeneticAlgorithm:
             self.setFitness(child2)
             print("get fitness > done")
             # dipilih
-            self.newGen.append(child1)
-            self.newGen.append(child2)
-        self.population = self.newGen
+            newGen.append(child1)
+            newGen.append(child2)
+        
+        # yang blm kawin di ikutkan ke new generation
+        # bisa jadi karena fitnessnya tinggi atau ncen jones
+
+        for individu in self.population:
+            if not individu["isMarried"]:
+                newGen.append(individu)
+
+        self.population = newGen
         self.generation.append(self.population)
+        self.saveGeneration(len(self.generation)-1)
+    
+    def run(self):
+        for i in range(self.number_of_generation-1):
+            self.newGeneration()
